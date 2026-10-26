@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
     const char* csv_path = nullptr;
     const char* events_path = nullptr;
 
-    for (int i = 1; i < argc; ++i) {
+    for (int i = 1; i < argc; i+=2) {
         const std::string arg = argv[i];
         const char* val = i + 1 < argc ? argv[i + 1] : nullptr;
         if (val == nullptr) {
@@ -58,7 +58,6 @@ int main(int argc, char** argv) {
             usage();
             return 2;
         }
-        ++i;
     }
 
     if (csv_path != nullptr && (opts.csv = std::fopen(csv_path, "w")) == nullptr) {
