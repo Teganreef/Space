@@ -124,6 +124,13 @@ RunMetrics run_mission(const RunOptions& opts) {
 
     const auto events = inj.events();
     std::array<bool, kMaxEvents> detected{};
+    // A sun sensor fault that starts and ends in eclipse never changes a
+    // reading, so no controller could detect it. Those are not scored.
+    std::array<bool, kMaxEvents> observable{};
+    for (std::size_t i = 0; i < events.size(); ++i) {
+        const FaultKind k = events[i].kind;
+        observable[i] = k != FaultKind::SunBias && k != FaultKind::SunNoise;
+    }
     std::array<bool, kViolationCount> prev_violation{};
     std::array<uint32_t, kViolationCount> last_violation{};
     std::array<bool, kViolationCount> ever_violated{};
@@ -193,6 +200,7 @@ RunMetrics run_mission(const RunOptions& opts) {
         }
 
         SensorFrame sensors = sc.sense(t);
+        const bool sun_visible = sensors.sun_a_valid;
         inj.apply_sensor_faults(t, sensors);
         const ControlOutput out = ctrl->step(t, sensors, std::span<const Frame>(rx.data(), n_rx));
 
@@ -231,11 +239,14 @@ RunMetrics run_mission(const RunOptions& opts) {
         // Detection latency, per scored fault event.
         for (std::size_t i = 0; i < events.size(); ++i) {
             const FaultEvent& e = events[i];
+            if (sun_visible && FaultInjector::active(e, t)) {
+                observable[i] = true;
+            }
             const uint8_t cls = detect_class(e.kind);
             if (cls == 0 || detected[i] || t < e.onset) {
                 continue;
             }
-            if ((out.detected & cls) != 0) {
+            if ((out.detected & cls) != 0 && observable[i]) {
                 detected[i] = true;
                 const uint32_t latency = t - e.onset;
                 ++m.faults_detected;
@@ -290,7 +301,9 @@ RunMetrics run_mission(const RunOptions& opts) {
     }
 
     for (std::size_t i = 0; i < events.size(); ++i) {
-        if (detect_class(events[i].kind) != 0) {
+        if (detect_class(events[i].kind) != 0 && !observable[i]) {
+            ++m.faults_unobservable;
+        } else if (detect_class(events[i].kind) != 0) {
             ++m.faults_scored;
             ++m.by_kind[static_cast<std::size_t>(events[i].kind)][0];
         }
@@ -315,12 +328,12 @@ std::string to_json(const RunMetrics& m) {
         s += buf;
     }
     std::snprintf(buf, sizeof(buf),
-                  "},\"faults_scored\":%u,\"faults_detected\":%u,\"latency_sum\":%" PRIu64
+                  "},\"faults_scored\":%u,\"faults_unobservable\":%u,\"faults_detected\":%u,\"latency_sum\":%" PRIu64
                   ",\"latency_max\":%u,\"safe_entries\":%u,\"false_safe_entries\":%u,\"recoveries\":%u,"
                   "\"recovery_ticks_sum\":%" PRIu64
                   ",\"planned_science_ticks\":%u,\"science_ticks\":%u,\"min_soc\":%.4f,\"final_soc\":%.4f,"
                   "\"mode_ticks\":{",
-                  m.faults_scored, m.faults_detected, m.latency_sum, m.latency_max, m.safe_entries,
+                  m.faults_scored, m.faults_unobservable, m.faults_detected, m.latency_sum, m.latency_max, m.safe_entries,
                   m.false_safe_entries, m.recoveries, m.recovery_ticks_sum, m.planned_science_ticks, m.science_ticks,
                   m.min_soc, m.final_soc);
     s += buf;

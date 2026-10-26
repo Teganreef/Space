@@ -288,8 +288,10 @@ void HardenedController::estimate_attitude(const SensorFrame& s, ControlOutput& 
         const float innov = wrap(meas - prop);
         theta_est_ = wrap(prop + kAttGain * innov);
         // Only learn bias while tracking. A large innovation means something
-        // else is going on (slew, recovering a sensor) and is not bias.
-        if (sensors_agree && std::abs(innov) < kBiasLearnGate) {
+        // else is going on (slew, recovering a sensor) and is not bias. With
+        // one sensor left this still works for gyro bias: a constant sensor
+        // offset is absorbed by the angle estimate, a rate error is not.
+        if (std::abs(innov) < kBiasLearnGate) {
             bias_est_ -= kBiasGain * innov;
         }
     } else {

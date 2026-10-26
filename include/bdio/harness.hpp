@@ -37,6 +37,7 @@ struct RunMetrics {
     uint32_t total_violations = 0;
 
     uint32_t faults_scored = 0;
+    uint32_t faults_unobservable = 0;
     uint32_t faults_detected = 0;
     uint64_t latency_sum = 0;
     uint32_t latency_max = 0;

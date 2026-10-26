@@ -36,7 +36,7 @@ const char* to_string(FaultKind k);
 // silence, not something with an onset a controller can observe directly).
 uint8_t detect_class(FaultKind k);
 
-enum class Scenario : uint8_t { Nominal, Sensor, Power, Comms, Seu, Combined, Count };
+enum class Scenario : uint8_t { Nominal, Sensor, Power, Comms, Seu, Combined, SeuStorm, Count };
 
 const char* to_string(Scenario s);
 bool parse_scenario(std::string_view name, Scenario& out);
@@ -49,7 +49,7 @@ struct FaultEvent {
     float magnitude = 0.0F;
 };
 
-inline constexpr std::size_t kMaxEvents = 128;
+inline constexpr std::size_t kMaxEvents = 4096;
 
 // Generates a reproducible fault timeline from (scenario, seed) and applies
 // it during the run. All randomness after construction comes from a separate

@@ -53,6 +53,7 @@ const char* to_string(Scenario s) {
         case Scenario::Comms: return "comms";
         case Scenario::Seu: return "seu";
         case Scenario::Combined: return "combined";
+        case Scenario::SeuStorm: return "seu_storm";
         case Scenario::Count: break;
     }
     return "unknown";
@@ -120,6 +121,11 @@ FaultInjector::FaultInjector(Scenario scenario, uint64_t seed, uint32_t mission_
             add_seus(1.0 / 1500.0, mission_ticks);
             break;
         }
+        case Scenario::SeuStorm:
+            // Far beyond a realistic LEO upset rate. Exists to find where
+            // per-cycle TMR scrubbing stops being enough.
+            add_seus(1.0 / 10.0, mission_ticks);
+            break;
         case Scenario::Count:
             break;
     }
