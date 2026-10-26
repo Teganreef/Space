@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  flight-code:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        config:
+          - { name: release, flags: "-DCMAKE_BUILD_TYPE=Release" }
+          - { name: sanitizers, flags: "-DCMAKE_BUILD_TYPE=Debug -DBDIO_SANITIZE=ON" }
+    name: build + test (${{ matrix.config.name }})
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build ${{ matrix.config.flags }}
+      - name: Build
+        run: cmake --build build -j
+      - name: Unit tests
+        run: ctest --test-dir build --output-on-failure
+      - name: Smoke campaign
+        run: ./build/bdio_campaign --runs 20 --out smoke.jsonl
+
+  quantum:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r quantum/requirements.txt
+      - run: cd quantum && python -m pytest -q
