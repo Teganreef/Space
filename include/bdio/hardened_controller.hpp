@@ -20,7 +20,8 @@ Mode decode_hardened_mode(uint8_t raw);
 
 // Fault-tolerant flight software. Differences from the baseline:
 //  - critical discrete state in TMR, scrubbed every cycle
-//  - command table protected by CRC; corruption discards it
+//  - command table stored twice with a CRC on each; a damaged copy is
+//    restored from the good one, and only if both are damaged is it dropped
 //  - uplink frames checked for CRC, replay (sequence number) and age
 //  - two sun sensors cross-checked against gyro propagation; a sensor is
 //    only declared failed after a persistent disagreement
@@ -39,14 +40,21 @@ public:
     float soc_estimate() const override { return soc_est_; }
     float theta_estimate() const override { return theta_est_; }
 
+    // Command table. Kept as two copies, each with its own CRC: the CRC says
+    // which copy is damaged, the other copy repairs it.
+    struct PlanTable {
+        uint8_t n = 0;
+        uint8_t spare = 0;
+        uint16_t crc = 0;
+        std::array<PayloadWindow, 8> windows{};
+    };
+
     struct Critical {
         Tmr<uint8_t> mode;
         Tmr<uint8_t> payload_on;
         Tmr<uint16_t> last_seq;
-        uint8_t n_plan = 0;
-        uint8_t spare = 0;
-        uint16_t crc = 0;
-        std::array<PayloadWindow, 8> plan{};
+        PlanTable plan;
+        PlanTable plan_backup;
     };
     static_assert(std::has_unique_object_representations_v<Critical>);
 
@@ -57,8 +65,9 @@ public:
     bool comm_lost() const { return comm_lost_; }
 
 private:
-    uint16_t plan_crc() const;
-    void reseal_plan();
+    static uint16_t table_crc(const PlanTable& t);
+    static bool table_ok(const PlanTable& t);
+    void commit_plan();
     void add_window(const PayloadWindow& w);
     bool window_active(uint32_t tick) const;
     bool future_window_in_orbit(uint32_t tick) const;

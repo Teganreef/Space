@@ -64,23 +64,26 @@ HardenedController::HardenedController() {
     crit_.mode.set(kModeBoot);
     crit_.payload_on.set(0);
     crit_.last_seq.set(0);
-    reseal_plan();
+    commit_plan();
 }
 
 std::span<std::byte> HardenedController::seu_region() {
     return {reinterpret_cast<std::byte*>(&crit_), sizeof(crit_)};
 }
 
-uint16_t HardenedController::plan_crc() const {
-    const auto* base = reinterpret_cast<const std::byte*>(&crit_);
-    const std::size_t head = offsetof(Critical, n_plan);
-    const std::size_t head_len = offsetof(Critical, crc) - head;
-    const std::size_t body = offsetof(Critical, plan);
-    uint16_t crc = crc16(std::span<const std::byte>(base + head, head_len));
-    return crc16(std::span<const std::byte>(base + body, sizeof(crit_.plan)), crc);
+uint16_t HardenedController::table_crc(const PlanTable& t) {
+    const auto* base = reinterpret_cast<const std::byte*>(&t);
+    uint16_t crc = crc16(std::span<const std::byte>(base, offsetof(PlanTable, crc)));
+    return crc16(std::span<const std::byte>(base + offsetof(PlanTable, windows), sizeof(t.windows)), crc);
 }
 
-void HardenedController::reseal_plan() { crit_.crc = plan_crc(); }
+bool HardenedController::table_ok(const PlanTable& t) { return t.n <= t.windows.size() && table_crc(t) == t.crc; }
+
+// Every edit goes to the primary, is sealed, then mirrored to the backup.
+void HardenedController::commit_plan() {
+    crit_.plan.crc = table_crc(crit_.plan);
+    crit_.plan_backup = crit_.plan;
+}
 
 void HardenedController::set_mode(uint8_t code) {
     crit_.mode.set(code);
@@ -88,24 +91,25 @@ void HardenedController::set_mode(uint8_t code) {
 }
 
 void HardenedController::add_window(const PayloadWindow& w) {
-    if (crit_.n_plan < crit_.plan.size()) {
-        crit_.plan[crit_.n_plan++] = w;
+    PlanTable& t = crit_.plan;
+    if (t.n < t.windows.size()) {
+        t.windows[t.n++] = w;
     } else {
         std::size_t oldest = 0;
-        for (std::size_t i = 1; i < crit_.plan.size(); ++i) {
-            if (crit_.plan[i].start + crit_.plan[i].duration <
-                crit_.plan[oldest].start + crit_.plan[oldest].duration) {
+        for (std::size_t i = 1; i < t.windows.size(); ++i) {
+            if (t.windows[i].start + t.windows[i].duration <
+                t.windows[oldest].start + t.windows[oldest].duration) {
                 oldest = i;
             }
         }
-        crit_.plan[oldest] = w;
+        t.windows[oldest] = w;
     }
-    reseal_plan();
+    commit_plan();
 }
 
 bool HardenedController::window_active(uint32_t tick) const {
-    for (std::size_t i = 0; i < crit_.n_plan; ++i) {
-        const PayloadWindow& w = crit_.plan[i];
+    for (std::size_t i = 0; i < crit_.plan.n; ++i) {
+        const PayloadWindow& w = crit_.plan.windows[i];
         if (tick >= w.start && tick < w.start + w.duration) {
             return true;
         }
@@ -115,8 +119,8 @@ bool HardenedController::window_active(uint32_t tick) const {
 
 bool HardenedController::future_window_in_orbit(uint32_t tick) const {
     const uint32_t orbit_end = (tick / kOrbitTicks + 1) * kOrbitTicks;
-    for (std::size_t i = 0; i < crit_.n_plan; ++i) {
-        const PayloadWindow& w = crit_.plan[i];
+    for (std::size_t i = 0; i < crit_.plan.n; ++i) {
+        const PayloadWindow& w = crit_.plan.windows[i];
         if (w.start + w.duration > tick && w.start < orbit_end) {
             return true;
         }
@@ -139,15 +143,21 @@ void HardenedController::check_memory(ControlOutput& out) {
         set_mode(kModeSafe);
         out.detected |= kDetMemory;
     }
-    if (plan_crc() != crit_.crc || crit_.n_plan > crit_.plan.size()) {
-        // Some byte of the command table is wrong and we cannot tell which.
-        // Dropping the plan costs science; executing a corrupted one could
-        // cost the spacecraft.
-        crit_.n_plan = 0;
-        crit_.spare = 0;
-        crit_.plan = {};
-        reseal_plan();
-        out.detected |= kDetMemory;
+    const bool primary_ok = table_ok(crit_.plan);
+    const bool backup_ok = table_ok(crit_.plan_backup);
+    if (primary_ok && backup_ok) {
+        return;
+    }
+    out.detected |= kDetMemory;
+    if (primary_ok) {
+        crit_.plan_backup = crit_.plan;
+    } else if (backup_ok) {
+        crit_.plan = crit_.plan_backup;
+    } else {
+        // Both copies damaged in the same cycle. Dropping the plan costs
+        // science; executing a corrupted one could cost the spacecraft.
+        crit_.plan = PlanTable{};
+        commit_plan();
     }
 }
 
