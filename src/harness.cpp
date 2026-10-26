@@ -3,6 +3,7 @@
 #include <bitset>
 #include <cinttypes>
 #include <memory>
+#include <vector>
 
 #include "bdio/hardened_controller.hpp"
 #include "bdio/naive_controller.hpp"
@@ -127,9 +128,13 @@ RunMetrics run_mission(const RunOptions& opts) {
     // A sun sensor fault that starts and ends in eclipse never changes a
     // reading, so no controller could detect it. Those are not scored.
     std::array<bool, kMaxEvents> observable{};
+    std::vector<std::size_t> sun_fault_idx;
     for (std::size_t i = 0; i < events.size(); ++i) {
         const FaultKind k = events[i].kind;
         observable[i] = k != FaultKind::SunBias && k != FaultKind::SunNoise;
+        if (!observable[i]) {
+            sun_fault_idx.push_back(i);
+        }
     }
     std::array<bool, kViolationCount> prev_violation{};
     std::array<uint32_t, kViolationCount> last_violation{};
@@ -157,9 +162,11 @@ RunMetrics run_mission(const RunOptions& opts) {
         if (const double loss = inj.cell_loss_at(t); loss > 0.0) {
             sc.lose_capacity(loss);
         }
-        for (const FaultEvent& e : events) {
-            if (e.onset == t && e.kind != FaultKind::Seu) {
-                log_event(t, "fault", to_string(e.kind));
+        if (opts.events != nullptr) {
+            for (const FaultEvent& e : events) {
+                if (e.onset == t && e.kind != FaultKind::Seu) {
+                    log_event(t, "fault", to_string(e.kind));
+                }
             }
         }
         if (inj.apply_seu(t, ctrl->seu_region())) {
@@ -236,12 +243,16 @@ RunMetrics run_mission(const RunOptions& opts) {
             }
         }
 
-        // Detection latency, per scored fault event.
-        for (std::size_t i = 0; i < events.size(); ++i) {
-            const FaultEvent& e = events[i];
-            if (sun_visible && FaultInjector::active(e, t)) {
-                observable[i] = true;
+        // Observability of sun sensor faults.
+        if (sun_visible) {
+            for (const std::size_t i : sun_fault_idx) {
+                observable[i] = observable[i] || FaultInjector::active(events[i], t);
             }
+        }
+
+        // Detection latency, per scored fault event.
+        for (std::size_t i = 0; i < events.size() && out.detected != 0; ++i) {
+            const FaultEvent& e = events[i];
             const uint8_t cls = detect_class(e.kind);
             if (cls == 0 || detected[i] || t < e.onset) {
                 continue;

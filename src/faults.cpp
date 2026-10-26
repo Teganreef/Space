@@ -129,6 +129,18 @@ FaultInjector::FaultInjector(Scenario scenario, uint64_t seed, uint32_t mission_
         case Scenario::Count:
             break;
     }
+    index_events();
+}
+
+void FaultInjector::index_events() {
+    for (std::size_t i = 0; i < n_events_; ++i) {
+        if (events_[i].kind == FaultKind::Seu) {
+            seu_onsets_[n_seu_++] = events_[i].onset;
+        } else {
+            fault_idx_[n_faults_++] = static_cast<uint16_t>(i);
+        }
+    }
+    std::sort(seu_onsets_.begin(), seu_onsets_.begin() + static_cast<std::ptrdiff_t>(n_seu_));
 }
 
 void FaultInjector::add(const FaultEvent& e) {
@@ -194,7 +206,8 @@ void FaultInjector::add_seus(double rate_per_tick, uint32_t mission_ticks) {
 }
 
 bool FaultInjector::any_active(FaultKind k, uint32_t tick) const {
-    for (std::size_t i = 0; i < n_events_; ++i) {
+    for (std::size_t j = 0; j < n_faults_; ++j) {
+        const std::size_t i = fault_idx_[j];
         if (events_[i].kind == k && active(events_[i], tick)) {
             return true;
         }
@@ -203,7 +216,8 @@ bool FaultInjector::any_active(FaultKind k, uint32_t tick) const {
 }
 
 void FaultInjector::apply_sensor_faults(uint32_t tick, SensorFrame& f) {
-    for (std::size_t i = 0; i < n_events_; ++i) {
+    for (std::size_t j = 0; j < n_faults_; ++j) {
+        const std::size_t i = fault_idx_[j];
         const FaultEvent& e = events_[i];
         if (!active(e, tick)) {
             is_latched_[i] = false;
@@ -261,7 +275,8 @@ void FaultInjector::apply_sensor_faults(uint32_t tick, SensorFrame& f) {
 }
 
 double FaultInjector::cell_loss_at(uint32_t tick) const {
-    for (std::size_t i = 0; i < n_events_; ++i) {
+    for (std::size_t j = 0; j < n_faults_; ++j) {
+        const std::size_t i = fault_idx_[j];
         if (events_[i].kind == FaultKind::CellLoss && events_[i].onset == tick) {
             return events_[i].magnitude;
         }
@@ -270,7 +285,8 @@ double FaultInjector::cell_loss_at(uint32_t tick) const {
 }
 
 uint32_t FaultInjector::delay(uint32_t tick) const {
-    for (std::size_t i = 0; i < n_events_; ++i) {
+    for (std::size_t j = 0; j < n_faults_; ++j) {
+        const std::size_t i = fault_idx_[j];
         if (events_[i].kind == FaultKind::CommDelay && active(events_[i], tick)) {
             return static_cast<uint32_t>(events_[i].magnitude);
         }
@@ -287,16 +303,18 @@ void FaultInjector::corrupt_frame(Frame& frame) {
 }
 
 bool FaultInjector::apply_seu(uint32_t tick, std::span<std::byte> region) {
-    if (region.empty()) {
-        return false;
+    while (seu_cursor_ < n_seu_ && seu_onsets_[seu_cursor_] < tick) {
+        ++seu_cursor_;
     }
     bool flipped = false;
-    for (std::size_t i = 0; i < n_events_; ++i) {
-        if (events_[i].kind == FaultKind::Seu && events_[i].onset == tick) {
-            const auto bit = static_cast<std::size_t>(runtime_.range(0, static_cast<uint32_t>(region.size() * 8 - 1)));
-            region[bit / 8] ^= static_cast<std::byte>(1U << (bit % 8));
-            flipped = true;
+    while (seu_cursor_ < n_seu_ && seu_onsets_[seu_cursor_] == tick) {
+        ++seu_cursor_;
+        if (region.empty()) {
+            continue;
         }
+        const auto bit = static_cast<std::size_t>(runtime_.range(0, static_cast<uint32_t>(region.size() * 8 - 1)));
+        region[bit / 8] ^= static_cast<std::byte>(1U << (bit % 8));
+        flipped = true;
     }
     return flipped;
 }

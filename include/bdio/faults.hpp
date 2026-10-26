@@ -92,8 +92,17 @@ private:
     FaultEvent random_power_fault(uint32_t onset);
     void add_seus(double rate_per_tick, uint32_t mission_ticks);
 
+    void index_events();
+
     std::array<FaultEvent, kMaxEvents> events_{};
     std::size_t n_events_ = 0;
+    // Per-tick queries only walk the events that can matter: the handful of
+    // non-upset faults, and upsets via a cursor over their sorted onsets.
+    std::array<uint16_t, kMaxEvents> fault_idx_{};
+    std::size_t n_faults_ = 0;
+    std::array<uint32_t, kMaxEvents> seu_onsets_{};
+    std::size_t n_seu_ = 0;
+    std::size_t seu_cursor_ = 0;
     std::array<float, kMaxEvents> latched_{};
     std::array<bool, kMaxEvents> is_latched_{};
     Rng gen_;      // builds the timeline

@@ -349,7 +349,9 @@ void HardenedController::estimate_battery(const SensorFrame& s, ControlOutput& o
             // Slowly bleed off integration drift from current-sensor noise.
             soc_cc_ += 0.002F * diff;
         }
-        soc_est_ = plausible ? soc_v_ : soc_cc_;
+        // A reading that disagrees with the counter is not used until the
+        // disagreement has persisted long enough to act on above.
+        soc_est_ = (plausible && std::abs(diff) <= kBattDisagree) ? soc_v_ : soc_cc_;
     } else {
         // Treat a biased sensor as offset rather than useless: track its
         // offset against the coulomb counter while the two move together.
@@ -373,7 +375,7 @@ void HardenedController::estimate_battery(const SensorFrame& s, ControlOutput& o
             batt_suspect_ = false;
             batt_offset_ = 0.0F;
         }
-        soc_est_ = live ? std::min(corrected, soc_cc_) : soc_cc_;
+        soc_est_ = (live && resid >= -kBattDisagree) ? std::min(corrected, soc_cc_) : soc_cc_;
     }
 }
 
