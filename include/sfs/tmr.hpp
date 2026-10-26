@@ -6,7 +6,7 @@
 #include <cstring>
 #include <type_traits>
 
-namespace bdio {
+namespace sfs {
 
 // Software triple modular redundancy. Three copies of a value; reads go
 // through a bitwise majority vote and the voted value is written back to all
@@ -52,4 +52,4 @@ struct Tmr {
     }
 };
 
-}  // namespace bdio
+}  // namespace sfs

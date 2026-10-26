@@ -2,10 +2,10 @@
 
 #include <bit>
 
-#include "bdio/hardened_controller.hpp"
-#include "bdio/tmr.hpp"
+#include "sfs/hardened_controller.hpp"
+#include "sfs/tmr.hpp"
 
-using namespace bdio;
+using namespace sfs;
 
 TEST(Tmr, CorrectsAnySingleBitInAnyCopy) {
     for (int copy = 0; copy < 3; ++copy) {

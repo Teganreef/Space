@@ -3,10 +3,10 @@
 #include <array>
 #include <type_traits>
 
-#include "bdio/controller.hpp"
-#include "bdio/tmr.hpp"
+#include "sfs/controller.hpp"
+#include "sfs/tmr.hpp"
 
-namespace bdio {
+namespace sfs {
 
 // Mode encodings chosen with a minimum pairwise Hamming distance of 4, so a
 // single bit flip can never turn one valid mode into another valid mode.
@@ -117,4 +117,4 @@ private:
     uint32_t last_sched_orbit_ = 0xFFFFFFFF;
 };
 
-}  // namespace bdio
+}  // namespace sfs

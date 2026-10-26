@@ -2,7 +2,7 @@
 
     python3 tools/plot_run.py --scenario combined --seed 42 --out results/replay.png
 
-Runs bdio_run twice (naive, hardened) with the same seed, so both see the same
+Runs sfs_run twice (naive, hardened) with the same seed, so both see the same
 faults, then draws true vs. estimated state of charge, safe-mode spans and
 fault onsets on a shared time axis.
 """
@@ -47,7 +47,7 @@ def spans(rows, mode):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--binary", default="build/bdio_run")
+    p.add_argument("--binary", default="build/sfs_run")
     p.add_argument("--scenario", default="combined")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--out", default="results/replay.png")

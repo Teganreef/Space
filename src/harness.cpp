@@ -1,17 +1,17 @@
-#include "bdio/harness.hpp"
+#include "sfs/harness.hpp"
 
 #include <bitset>
 #include <cinttypes>
 #include <memory>
 #include <vector>
 
-#include "bdio/hardened_controller.hpp"
-#include "bdio/naive_controller.hpp"
-#include "bdio/packet.hpp"
-#include "bdio/scheduler.hpp"
-#include "bdio/spacecraft.hpp"
+#include "sfs/hardened_controller.hpp"
+#include "sfs/naive_controller.hpp"
+#include "sfs/packet.hpp"
+#include "sfs/scheduler.hpp"
+#include "sfs/spacecraft.hpp"
 
-namespace bdio {
+namespace sfs {
 
 namespace {
 
@@ -380,4 +380,4 @@ const char* to_string(Mode m) {
     return "unknown";
 }
 
-}  // namespace bdio
+}  // namespace sfs

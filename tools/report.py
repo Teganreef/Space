@@ -3,7 +3,7 @@
     python3 tools/report.py results/campaign.jsonl --out results
 
 Writes results/summary.md (tables) and results/*.png (figures). Every number
-comes from the JSON lines produced by bdio_campaign; nothing is hand-entered.
+comes from the JSON lines produced by sfs_campaign; nothing is hand-entered.
 """
 
 import argparse

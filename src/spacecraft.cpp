@@ -1,9 +1,9 @@
-#include "bdio/spacecraft.hpp"
+#include "sfs/spacecraft.hpp"
 
 #include <algorithm>
 #include <cmath>
 
-namespace bdio {
+namespace sfs {
 
 Spacecraft::Spacecraft(const SpacecraftParams& params, uint64_t seed, double initial_soc)
     : params_(params), rng_(seed) {
@@ -53,4 +53,4 @@ void Spacecraft::lose_capacity(double fraction) {
     truth_.energy_j *= 0.6;
 }
 
-}  // namespace bdio
+}  // namespace sfs

@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <span>
 
-namespace bdio {
+namespace sfs {
 
 // A payload opportunity the spacecraft knows about without the ground: a
 // fixed target list, expressed as offsets into each orbit's sunlit arc.
@@ -36,4 +36,4 @@ constexpr bool overlaps(const Candidate& a, const Candidate& b) {
 std::size_t greedy_schedule(std::span<const Candidate> candidates, double budget_j, double payload_w,
                             std::span<uint8_t> out);
 
-}  // namespace bdio
+}  // namespace sfs

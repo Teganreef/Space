@@ -3,7 +3,7 @@
 #include <array>
 #include <cstdint>
 
-namespace bdio {
+namespace sfs {
 
 // One tick is one second of simulated time.
 inline constexpr double kDt = 1.0;
@@ -73,4 +73,4 @@ struct ControlOutput {
     std::array<uint32_t, kMaxExecPerTick> executed_age{};
 };
 
-}  // namespace bdio
+}  // namespace sfs

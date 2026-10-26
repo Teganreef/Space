@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(bad_day_in_orbit LANGUAGES CXX)
+project(spacecraft_fault_sim LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,19 +10,19 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-option(BDIO_BUILD_TESTS "Build unit tests" ON)
-option(BDIO_SANITIZE "Build with address and undefined behaviour sanitizers" OFF)
+option(SFS_BUILD_TESTS "Build unit tests" ON)
+option(SFS_SANITIZE "Build with address and undefined behaviour sanitizers" OFF)
 
-add_library(bdio_warnings INTERFACE)
-target_compile_options(bdio_warnings INTERFACE
+add_library(sfs_warnings INTERFACE)
+target_compile_options(sfs_warnings INTERFACE
   -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wno-sign-conversion -Werror)
 
-if(BDIO_SANITIZE)
+if(SFS_SANITIZE)
   add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
   add_link_options(-fsanitize=address,undefined)
 endif()
 
-add_library(bdio
+add_library(sfs
   src/packet.cpp
   src/spacecraft.cpp
   src/faults.cpp
@@ -31,15 +31,15 @@ add_library(bdio
   src/hardened_controller.cpp
   src/harness.cpp
 )
-target_include_directories(bdio PUBLIC include)
-target_link_libraries(bdio PRIVATE bdio_warnings)
+target_include_directories(sfs PUBLIC include)
+target_link_libraries(sfs PRIVATE sfs_warnings)
 
-foreach(app bdio_run bdio_campaign bdio_bench)
+foreach(app sfs_run sfs_campaign sfs_bench)
   add_executable(${app} apps/${app}.cpp)
-  target_link_libraries(${app} PRIVATE bdio bdio_warnings)
+  target_link_libraries(${app} PRIVATE sfs sfs_warnings)
 endforeach()
 
-if(BDIO_BUILD_TESTS)
+if(SFS_BUILD_TESTS)
   find_package(GTest QUIET)
   if(NOT GTest_FOUND)
     include(FetchContent)
@@ -54,7 +54,7 @@ if(BDIO_BUILD_TESTS)
   endif()
 
   enable_testing()
-  add_executable(bdio_tests
+  add_executable(sfs_tests
     tests/test_crc_packet.cpp
     tests/test_tmr.cpp
     tests/test_hardened.cpp
@@ -62,15 +62,15 @@ if(BDIO_BUILD_TESTS)
     tests/test_harness.cpp
     tests/test_scheduler.cpp
   )
-  target_link_libraries(bdio_tests PRIVATE bdio bdio_warnings GTest::gtest_main)
+  target_link_libraries(sfs_tests PRIVATE sfs sfs_warnings GTest::gtest_main)
   include(GoogleTest)
-  gtest_discover_tests(bdio_tests)
+  gtest_discover_tests(sfs_tests)
 
   # Replaces global operator new to count allocations, so it lives in its
   # own binary and is skipped under sanitizers, which replace it themselves.
-  if(NOT BDIO_SANITIZE)
-    add_executable(bdio_alloc_tests tests/test_no_alloc.cpp)
-    target_link_libraries(bdio_alloc_tests PRIVATE bdio bdio_warnings GTest::gtest_main)
-    gtest_discover_tests(bdio_alloc_tests)
+  if(NOT SFS_SANITIZE)
+    add_executable(sfs_alloc_tests tests/test_no_alloc.cpp)
+    target_link_libraries(sfs_alloc_tests PRIVATE sfs sfs_warnings GTest::gtest_main)
+    gtest_discover_tests(sfs_alloc_tests)
   endif()
 endif()

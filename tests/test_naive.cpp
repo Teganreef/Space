@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 
-#include "bdio/naive_controller.hpp"
+#include "sfs/naive_controller.hpp"
 #include "sim_helpers.hpp"
 
-using namespace bdio;
-using bdio::testing::healthy;
-using bdio::testing::window_cmd;
+using namespace sfs;
+using sfs::testing::healthy;
+using sfs::testing::window_cmd;
 
 // These document the baseline's weaknesses rather than bugs to fix. If one
 // of them starts failing the comparison in the campaign changes meaning.

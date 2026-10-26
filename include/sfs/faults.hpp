@@ -6,11 +6,11 @@
 #include <span>
 #include <string_view>
 
-#include "bdio/packet.hpp"
-#include "bdio/rng.hpp"
-#include "bdio/types.hpp"
+#include "sfs/packet.hpp"
+#include "sfs/rng.hpp"
+#include "sfs/types.hpp"
 
-namespace bdio {
+namespace sfs {
 
 enum class FaultKind : uint8_t {
     SunBias,        // sensor reports a plausible but offset angle
@@ -109,4 +109,4 @@ private:
     Rng runtime_;  // glitches, noise, bit positions
 };
 
-}  // namespace bdio
+}  // namespace sfs

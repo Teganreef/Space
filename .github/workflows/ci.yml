@@ -11,7 +11,7 @@ jobs:
       matrix:
         config:
           - { name: release, flags: "-DCMAKE_BUILD_TYPE=Release" }
-          - { name: sanitizers, flags: "-DCMAKE_BUILD_TYPE=Debug -DBDIO_SANITIZE=ON" }
+          - { name: sanitizers, flags: "-DCMAKE_BUILD_TYPE=Debug -DSFS_SANITIZE=ON" }
     name: build + test (${{ matrix.config.name }})
     steps:
       - uses: actions/checkout@v4
@@ -22,7 +22,7 @@ jobs:
       - name: Unit tests
         run: ctest --test-dir build --output-on-failure
       - name: Smoke campaign
-        run: ./build/bdio_campaign --runs 20 --out smoke.jsonl
+        run: ./build/sfs_campaign --runs 20 --out smoke.jsonl
 
   quantum:
     runs-on: ubuntu-24.04

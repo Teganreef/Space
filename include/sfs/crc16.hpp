@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <span>
 
-namespace bdio {
+namespace sfs {
 
 // CRC-16/CCITT-FALSE (poly 0x1021, init 0xFFFF), the variant used by CCSDS.
 namespace detail {
@@ -35,4 +35,4 @@ inline uint16_t crc16(std::span<const std::byte> data, uint16_t crc = 0xFFFF) {
     return crc16(std::span<const uint8_t>(reinterpret_cast<const uint8_t*>(data.data()), data.size()), crc);
 }
 
-}  // namespace bdio
+}  // namespace sfs

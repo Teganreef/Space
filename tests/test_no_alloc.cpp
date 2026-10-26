@@ -8,10 +8,10 @@
 #include <cstdlib>
 #include <new>
 
-#include "bdio/faults.hpp"
-#include "bdio/hardened_controller.hpp"
-#include "bdio/naive_controller.hpp"
-#include "bdio/spacecraft.hpp"
+#include "sfs/faults.hpp"
+#include "sfs/hardened_controller.hpp"
+#include "sfs/naive_controller.hpp"
+#include "sfs/spacecraft.hpp"
 #include "sim_helpers.hpp"
 
 namespace {
@@ -32,11 +32,11 @@ namespace {
 
 template <typename Ctrl>
 long allocations_during_mission() {
-    using namespace bdio;
+    using namespace sfs;
     Spacecraft sc(SpacecraftParams{}, 3, 0.55);
     FaultInjector inj(Scenario::Combined, 3, kMissionTicks);
     Ctrl ctrl;
-    const Frame f = bdio::testing::window_cmd(1, 1030, 1800, 400);
+    const Frame f = sfs::testing::window_cmd(1, 1030, 1800, 400);
 
     std::array<SensorFrame, 1> scratch{};
     const long before = g_allocs.load();
@@ -53,6 +53,6 @@ long allocations_during_mission() {
 
 }  // namespace
 
-TEST(NoAlloc, HardenedStepNeverAllocates) { EXPECT_EQ(allocations_during_mission<bdio::HardenedController>(), 0); }
+TEST(NoAlloc, HardenedStepNeverAllocates) { EXPECT_EQ(allocations_during_mission<sfs::HardenedController>(), 0); }
 
-TEST(NoAlloc, NaiveStepNeverAllocates) { EXPECT_EQ(allocations_during_mission<bdio::NaiveController>(), 0); }
+TEST(NoAlloc, NaiveStepNeverAllocates) { EXPECT_EQ(allocations_during_mission<sfs::NaiveController>(), 0); }

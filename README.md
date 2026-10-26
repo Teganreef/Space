@@ -1,4 +1,4 @@
-# Bad Day in Orbit
+# Spacecraft Fault Simulator
 
 A flight-software fault-injection lab. A small simulated spacecraft, two
 versions of its flight controller, and a test campaign that tries to break
@@ -65,7 +65,7 @@ of its state, and drops to safe mode on any single out-of-range reading.
 **Hardened** (`src/hardened_controller.cpp`):
 
 - **Memory.** Mode, payload latch and last command sequence number are stored
-  in triple modular redundancy (`include/bdio/tmr.hpp`) and scrubbed every
+  in triple modular redundancy (`include/sfs/tmr.hpp`) and scrubbed every
   cycle with a bitwise majority vote. Mode values are encoded with a minimum
   Hamming distance of 4, so one flipped bit can never turn one valid mode into
   another. The command table is stored twice with a CRC on each copy.
@@ -155,7 +155,7 @@ up with the before and after numbers in
 
 ### Timing
 
-`bdio_bench` measures one control cycle over 10^6 cycles of the combined
+`sfs_bench` measures one control cycle over 10^6 cycles of the combined
 scenario. Ranges are over two runs (Release build, containerised Linux, no
 real-time scheduling):
 
@@ -219,7 +219,7 @@ penalty weight just above the largest single target value so that every
 infeasible assignment costs more than the best feasible one
 (`quantum/problem.py`). Tests check that the QUBO minimum equals the true
 optimum and that every ground state is a feasible plan. The target catalog is
-parsed from `include/bdio/scheduler.hpp`, so the benchmark and the onboard
+parsed from `include/sfs/scheduler.hpp`, so the benchmark and the onboard
 scheduler always solve the same problem.
 
 `quantum/qaoa.py` also has `run_on_ibm()` for sampling the optimised circuit on
@@ -237,17 +237,17 @@ cmake --build build -j
 ctest --test-dir build
 
 # one mission, with flight recorder output
-./build/bdio_run --scenario combined --seed 8 --controller hardened --csv run.csv --events events.csv
+./build/sfs_run --scenario combined --seed 8 --controller hardened --csv run.csv --events events.csv
 
 # full campaign and report
-./build/bdio_campaign --runs 1000 --out results/campaign.jsonl
+./build/sfs_campaign --runs 1000 --out results/campaign.jsonl
 python3 tools/report.py results/campaign.jsonl --out results
 
 # timing
-./build/bdio_bench
+./build/sfs_bench
 
 # sanitizers
-cmake -S . -B build-asan -DBDIO_SANITIZE=ON -DCMAKE_BUILD_TYPE=Debug && cmake --build build-asan -j && ctest --test-dir build-asan
+cmake -S . -B build-asan -DSFS_SANITIZE=ON -DCMAKE_BUILD_TYPE=Debug && cmake --build build-asan -j && ctest --test-dir build-asan
 
 # quantum benchmark
 pip install -r quantum/requirements.txt
@@ -275,9 +275,9 @@ Scenarios: `nominal`, `sensor`, `power`, `comms`, `seu`, `combined`,
 ## Layout
 
 ```
-include/bdio/   headers: types, TMR, CRC, packet format, controllers, harness
+include/sfs/   headers: types, TMR, CRC, packet format, controllers, harness
 src/            spacecraft model, fault injector, controllers, scheduler, harness
-apps/           bdio_run, bdio_campaign, bdio_bench
+apps/           sfs_run, sfs_campaign, sfs_bench
 tests/          GoogleTest suite and the allocation test
 tools/          campaign report and replay plots
 quantum/        QUBO formulation, classical solvers, QAOA, benchmark, tests

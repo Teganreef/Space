@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "bdio/scheduler.hpp"
+#include "sfs/scheduler.hpp"
 
-using namespace bdio;
+using namespace sfs;
 
 TEST(Greedy, RespectsBudgetAndConflicts) {
     std::array<uint8_t, kOnboardTargets.size()> out{};

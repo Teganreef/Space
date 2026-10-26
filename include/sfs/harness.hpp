@@ -5,10 +5,10 @@
 #include <cstdio>
 #include <string>
 
-#include "bdio/faults.hpp"
-#include "bdio/types.hpp"
+#include "sfs/faults.hpp"
+#include "sfs/types.hpp"
 
-namespace bdio {
+namespace sfs {
 
 enum class ControllerKind : uint8_t { Naive, Hardened };
 const char* to_string(ControllerKind k);
@@ -71,4 +71,4 @@ RunMetrics run_mission(const RunOptions& opts);
 
 std::string to_json(const RunMetrics& m);
 
-}  // namespace bdio
+}  // namespace sfs

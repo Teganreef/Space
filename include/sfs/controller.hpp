@@ -3,10 +3,10 @@
 #include <cstddef>
 #include <span>
 
-#include "bdio/packet.hpp"
-#include "bdio/types.hpp"
+#include "sfs/packet.hpp"
+#include "sfs/types.hpp"
 
-namespace bdio {
+namespace sfs {
 
 // Flight software interface. step() runs once per tick and must not allocate:
 // all state is sized at construction. seu_region() exposes the bytes that the
@@ -36,4 +36,4 @@ inline constexpr uint32_t kMaxCommandAge = 60;
 
 float pd_torque(float theta_est, float omega_est, float target);
 
-}  // namespace bdio
+}  // namespace sfs

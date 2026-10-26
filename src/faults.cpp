@@ -1,9 +1,9 @@
-#include "bdio/faults.hpp"
+#include "sfs/faults.hpp"
 
 #include <algorithm>
 #include <cmath>
 
-namespace bdio {
+namespace sfs {
 
 namespace {
 constexpr double kSunGlitchProb = 1.0 / 1500.0;
@@ -330,4 +330,4 @@ bool FaultInjector::any_fault_near(uint32_t tick, uint32_t window) const {
     return false;
 }
 
-}  // namespace bdio
+}  // namespace sfs

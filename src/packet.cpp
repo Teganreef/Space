@@ -1,10 +1,10 @@
-#include "bdio/packet.hpp"
+#include "sfs/packet.hpp"
 
 #include <span>
 
-#include "bdio/crc16.hpp"
+#include "sfs/crc16.hpp"
 
-namespace bdio {
+namespace sfs {
 
 namespace {
 
@@ -72,4 +72,4 @@ DecodeStatus decode_unchecked(const Frame& frame, Command& out) {
     return DecodeStatus::Ok;
 }
 
-}  // namespace bdio
+}  // namespace sfs

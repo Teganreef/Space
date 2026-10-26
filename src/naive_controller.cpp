@@ -1,11 +1,11 @@
-#include "bdio/naive_controller.hpp"
+#include "sfs/naive_controller.hpp"
 
 #include <algorithm>
 #include <cmath>
 
-#include "bdio/spacecraft.hpp"
+#include "sfs/spacecraft.hpp"
 
-namespace bdio {
+namespace sfs {
 
 namespace {
 
@@ -124,4 +124,4 @@ ControlOutput NaiveController::step(uint32_t tick, const SensorFrame& s, std::sp
     return out;
 }
 
-}  // namespace bdio
+}  // namespace sfs

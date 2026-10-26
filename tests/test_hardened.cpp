@@ -3,12 +3,12 @@
 #include <algorithm>
 #include <array>
 
-#include "bdio/hardened_controller.hpp"
+#include "sfs/hardened_controller.hpp"
 #include "sim_helpers.hpp"
 
-using namespace bdio;
-using bdio::testing::healthy;
-using bdio::testing::window_cmd;
+using namespace sfs;
+using sfs::testing::healthy;
+using sfs::testing::window_cmd;
 
 namespace {
 

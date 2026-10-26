@@ -2,10 +2,10 @@
 
 #include <cstdint>
 
-#include "bdio/rng.hpp"
-#include "bdio/types.hpp"
+#include "sfs/rng.hpp"
+#include "sfs/types.hpp"
 
-namespace bdio {
+namespace sfs {
 
 // Deliberately small physics: one rotation axis (angle between the solar
 // panel normal and the sun) and an energy-balance battery. Enough for sensor
@@ -70,4 +70,4 @@ private:
     double last_net_w_ = 0.0;
 };
 
-}  // namespace bdio
+}  // namespace sfs

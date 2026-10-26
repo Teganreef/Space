@@ -1,8 +1,8 @@
-#include "bdio/scheduler.hpp"
+#include "sfs/scheduler.hpp"
 
 #include <algorithm>
 
-namespace bdio {
+namespace sfs {
 
 std::size_t greedy_schedule(std::span<const Candidate> candidates, double budget_j, double payload_w,
                             std::span<uint8_t> out) {
@@ -48,4 +48,4 @@ std::size_t greedy_schedule(std::span<const Candidate> candidates, double budget
     return chosen;
 }
 
-}  // namespace bdio
+}  // namespace sfs

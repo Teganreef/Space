@@ -3,7 +3,7 @@
 #include <array>
 #include <cstdint>
 
-namespace bdio {
+namespace sfs {
 
 // Uplink command frame. Fixed 18 byte big-endian layout:
 //
@@ -42,4 +42,4 @@ DecodeStatus decode(const Frame& frame, Command& out);
 // controller can model software that trusts the link layer.
 DecodeStatus decode_unchecked(const Frame& frame, Command& out);
 
-}  // namespace bdio
+}  // namespace sfs

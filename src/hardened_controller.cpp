@@ -1,14 +1,14 @@
-#include "bdio/hardened_controller.hpp"
+#include "sfs/hardened_controller.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
 
-#include "bdio/crc16.hpp"
-#include "bdio/scheduler.hpp"
-#include "bdio/spacecraft.hpp"
+#include "sfs/crc16.hpp"
+#include "sfs/scheduler.hpp"
+#include "sfs/spacecraft.hpp"
 
-namespace bdio {
+namespace sfs {
 
 namespace {
 
@@ -487,4 +487,4 @@ ControlOutput HardenedController::step(uint32_t tick, const SensorFrame& s, std:
     return out;
 }
 
-}  // namespace bdio
+}  // namespace sfs

@@ -2,11 +2,11 @@
 
 #include <cmath>
 
-#include "bdio/packet.hpp"
-#include "bdio/spacecraft.hpp"
-#include "bdio/types.hpp"
+#include "sfs/packet.hpp"
+#include "sfs/spacecraft.hpp"
+#include "sfs/types.hpp"
 
-namespace bdio::testing {
+namespace sfs::testing {
 
 // A healthy sensor frame. Values carry a tiny tick-dependent jitter because
 // the hardened controller treats bit-identical consecutive samples as a
@@ -28,4 +28,4 @@ inline Frame window_cmd(uint16_t seq, uint32_t send_tick, uint32_t start, uint16
     return encode({seq, send_tick, CommandType::AddPayloadWindow, start, duration, 5});
 }
 
-}  // namespace bdio::testing
+}  // namespace sfs::testing

@@ -3,9 +3,9 @@
 #include <array>
 #include <type_traits>
 
-#include "bdio/controller.hpp"
+#include "sfs/controller.hpp"
 
-namespace bdio {
+namespace sfs {
 
 // Baseline flight software: functionally correct when nothing goes wrong.
 // It trusts its primary sensors, trusts the link layer, keeps one copy of
@@ -40,4 +40,4 @@ private:
     float soc_est_ = 0.5F;
 };
 
-}  // namespace bdio
+}  // namespace sfs

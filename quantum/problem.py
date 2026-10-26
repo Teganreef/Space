@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-HEADER = pathlib.Path(__file__).resolve().parent.parent / "include" / "bdio" / "scheduler.hpp"
+HEADER = pathlib.Path(__file__).resolve().parent.parent / "include" / "sfs" / "scheduler.hpp"
 PAYLOAD_W = 8.0
 ENERGY_UNIT_J = 800.0  # budget is expressed in integer units of this size
 ORBIT_TICKS = 5400

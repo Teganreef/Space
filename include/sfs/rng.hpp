@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cstdint>
 
-namespace bdio {
+namespace sfs {
 
 // xoshiro256** seeded through splitmix64. Implemented here instead of using
 // <random> distributions because those are not guaranteed to produce the same
@@ -65,4 +65,4 @@ private:
     uint64_t s_[4]{};
 };
 
-}  // namespace bdio
+}  // namespace sfs

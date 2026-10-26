@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "bdio/harness.hpp"
+#include "sfs/harness.hpp"
 
-using namespace bdio;
+using namespace sfs;
 
 namespace {
 RunMetrics run(Scenario s, uint64_t seed, ControllerKind k) {

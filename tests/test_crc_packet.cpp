@@ -2,10 +2,10 @@
 
 #include <string_view>
 
-#include "bdio/crc16.hpp"
-#include "bdio/packet.hpp"
+#include "sfs/crc16.hpp"
+#include "sfs/packet.hpp"
 
-using namespace bdio;
+using namespace sfs;
 
 TEST(Crc16, MatchesCcittFalseCheckValue) {
     constexpr std::string_view check = "123456789";
